@@ -1,0 +1,63 @@
+{
+  "name": "ng2-bean",
+  "version": "0.0.26",
+  "description": "Angular2 components pack powered by Semantic UI and Bootstrap",
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/kobby-sun/ng2-bean.git"
+	},
+  "keywords": [
+    "angular2",
+    "bootstrap",
+    "semantic ui",
+    "typescript"
+  ],
+  "author": "Kobby Sun <kobbysun@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@angular/common": "~2.4.1",
+    "@angular/core": "~2.4.1",
+    "@angular/forms": "~2.4.1",
+    "@angular/http": "~2.4.1",
+    "core-js": "^2.4.1",
+    "rxjs": "5.0.1",
+    "systemjs": "0.19.40",
+    "zone.js": "^0.7.4",
+    "angular-in-memory-web-api": "~0.2.4",
+    "bootstrap": "^3.3.7",
+    "ie-shim": "^0.1.0",
+    "angular2-jwt": "^0.1.27",
+    "jquery": "^2.2.4",
+    "lodash": "^4.17.4",
+    "moment": "^2.17.1",
+    "moment-timezone": "^0.5.11",
+    "bootstrap-datepicker": "^1.6.4",
+    "bootstrap-timepicker": "^0.5.2",
+    "http-server": "^0.9.0",
+    "query-string": "^4.2.3",
+    "numeral": "^2.0.4",
+    "toastr": "^2.1.2",
+    "immutable": "^3.8.1",
+    "rome": "2.1.22",
+    "flatpickr": "2.2.3",
+    "nprogress": "0.2.0",
+    "bootstrap_dropdowns_enhancement": "3.1.2",
+    "daterangepicker": "0.0.3",
+    "bootstrap-toggle": "2.2.2",
+    "bootstrap-switch": "3.3.2",
+    "select2": "4.0.3",
+    "semantic-ui": "2.2.6",
+    "peity": "^3.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^2.1.4"
+  },
+  "engines": {
+    "node": ">= 4.2.1",
+    "npm": ">= 3"
+  }
+}

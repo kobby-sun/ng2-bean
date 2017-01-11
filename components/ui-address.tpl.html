@@ -1,0 +1,26 @@
+<div class="two fields">
+    <div class="field">
+        <label>Line 1</label>
+        <ui-fc (onChange)="searchAddr($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.addr1"></ui-fc>
+    </div>
+
+    <div class="field">
+        <label>Line 2</label>
+        <ui-fc (onChange)="change($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.addr2"></ui-fc>
+    </div>
+</div>
+
+<div class="three fields">
+    <div class="eight wide field">
+        <label>City</label>
+        <ui-fc (onChange)="change($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.city"></ui-fc>
+    </div>
+    <div class="four wide field">
+        <label>State</label>
+        <ui-fc (onChange)="change($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.state"></ui-fc>
+    </div>
+    <div class="four wide field">
+        <label>Postcode</label>
+        <ui-fc (onChange)="change($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.postcode"></ui-fc>
+    </div>
+</div>
