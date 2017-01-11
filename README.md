@@ -1,3 +1,6 @@
+[![npm](https://img.shields.io/npm/v/ng2-bean.svg)](https://www.npmjs.com/package/ng2-bean)
+[![npm](https://img.shields.io/npm/dt/ng2-bean.svg?label=npm%20downloads)](https://www.npmjs.com/package/ng2-bean)
+
 # Angular2 components pack powered by Semantic UI and Bootstrap
 
 ## Webpack vendor setup
