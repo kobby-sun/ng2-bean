@@ -3,16 +3,16 @@ import { Router, NavigationStart } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { Subscriber } from 'rxjs/Subscriber';
 
-export function polling(func, before: Function, router: Router, tick: Function, tick_param: any = null, freq: number = 10000, error: Function = null, complete: Function = null): Subscriber<Response> {
+export function polling(func, router: Router, tick: Function, tick_param: any = null, freq: number = 10000, before: Function, after: Function = null, error: Function = null, complete: Function = null): Subscriber<Response> {
   let req: Function
   let pass: Function
   return Observable.create((observer: Subscriber<Response>) => {
     req = function () {
       if (before) before();
       var subscription = func().subscribe(result => {
-
         observer.next(result);
         subscription.unsubscribe();
+        if (after) after();
       }, err => {
         observer.next(err);
         subscription.unsubscribe();
