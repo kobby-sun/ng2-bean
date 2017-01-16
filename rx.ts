@@ -3,7 +3,7 @@ import { Router, NavigationStart } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { Subscriber } from 'rxjs/Subscriber';
 
-export function polling(func, before: Function, router: Router, tick: Function, freq: number = 10000): Subscriber<Response> {
+export function polling(func, before: Function, router: Router, tick: Function, tick_param: any = null, freq: number = 10000, error: Function = null, complete: Function = null): Subscriber<Response> {
   let req: Function
   let pass: Function
   return Observable.create((observer: Subscriber<Response>) => {
@@ -47,16 +47,18 @@ export function polling(func, before: Function, router: Router, tick: Function, 
     }
   }).subscribe(
     function (x) {
-      if (tick(x))
+      if (tick(x, tick_param))
         setTimeout(req, freq)
       else
         setTimeout(pass, freq)
       // console.log('Next: ', x);
     },
     function (err) {
-      console.log('Error: ', err);
+      // console.log('Error: ', err);
+      if (error != null) error(err)
     },
     function () {
       // console.log('Completed');
+      if (complete != null) complete()
     });
 }

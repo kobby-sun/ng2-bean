@@ -39,6 +39,8 @@ export function extendUsageChart(ele, prev_data, data, cb = null) {
 export function renderUsageChart(ele, data, cb = null) {
   // console.debug('START RENDERING CHART');
 
+  if (data == null) return;
+
   (function () {
     var d3 = Plotly.d3;
 
