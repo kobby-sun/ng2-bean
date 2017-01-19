@@ -47,9 +47,9 @@ export function renderUsageChart(ele, data, cb = null) {
     var WIDTH_IN_PERCENT_OF_PARENT = 100,
       HEIGHT_IN_PERCENT_OF_PARENT = 100;
 
-    Plotly.purge(ele.nativeElement);
+    Plotly.purge(ele);
 
-    var gd3 = d3.select(ele.nativeElement)
+    var gd3 = d3.select(ele)
     gd3//.append('div')
       .style({
         width: WIDTH_IN_PERCENT_OF_PARENT + '%',
