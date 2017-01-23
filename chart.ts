@@ -20,6 +20,66 @@ export const periods: Array<any> = [
   { value: 'L7D', label: 'Last 7 days' },
 ];
 
+export const chartLayout = {
+  full: {
+    yaxis: { title: "Power Usage (W)" },       // set the y axis title
+    yaxis2: {
+      title: 'Power Usage (W)',
+      overlaying: 'y',
+      side: 'right'
+    },
+    xaxis: {
+      title: `Time (${moment.tz.guess()} GMT${(moment().utcOffset() >= 0 ? '+' : '-') + moment().utcOffset() / 60})`,
+      // title: `Time (UTC)`,
+      showgrid: true,                  // remove the x-axis grid lines
+      // tickformat: "%a %b %e %H:%M:%S %p %Y"              // customize the date format to "month, day"
+    },
+    margin: {                           // update the left, bottom, right, top margin
+      l: 70, b: 70, r: 70, t: 0
+    },
+    // title: 'Power Usage',
+    showlegend: true,
+    legend: { "orientation": "h" }
+  },
+  lite: {
+    yaxis: { title: "Power Usage (W)" },       // set the y axis title
+    yaxis2: {
+      title: 'Power Usage (W)',
+      overlaying: 'y',
+      side: 'right'
+    },
+    xaxis: {
+      title: `Time (${moment.tz.guess()} GMT${(moment().utcOffset() >= 0 ? '+' : '-') + moment().utcOffset() / 60})`,
+      // title: `Time (UTC)`,
+      showgrid: true,                  // remove the x-axis grid lines
+      // tickformat: "%a %b %e %H:%M:%S %p %Y"              // customize the date format to "month, day"
+    },
+    margin: {                           // update the left, bottom, right, top margin
+      l: 60, b: 60, r: 70, t: 0
+    },
+    // title: 'Power Usage',
+    showlegend: true,
+    legend: { "orientation": "h" }
+  }
+}
+
+export const chartOption = {
+  full: {
+    showLink: false,
+    displaylogo: false,
+    modeBarButtons: [['toImage', 'zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian']],
+    // modeBarButtonsToAdd: [{ name: 'test', click: (e) => { console.log(e) } }]
+    // displayModeBar: true
+  },
+  lite: {
+    showLink: false,
+    displaylogo: false,
+    modeBarButtons: [[]],
+    // modeBarButtonsToAdd: [{ name: 'test', click: (e) => { console.log(e) } }]
+    // displayModeBar: true
+  }
+}
+
 function stackedArea(traces) {
   for (var i = 1; i < traces.length; i++) {
     for (var j = 0; j < (Math.min(traces[i]['y'].length, traces[i - 1]['y'].length)); j++) {
@@ -33,10 +93,10 @@ export function extendUsageChart(ele, prev_data, data, cb = null) {
   //max data length 721 for day
   //max data length 180 for last hour
   //max data length 503 for last 7 days
-  
+
 }
 
-export function renderUsageChart(ele, data, cb = null) {
+export function renderUsageChart(ele, data, layout = chartLayout.full, option = chartOption.full, cb = null) {
   // console.debug('START RENDERING CHART');
 
   if (data == null) return;
@@ -109,38 +169,7 @@ export function renderUsageChart(ele, data, cb = null) {
       dup.push(idx * 2)
     });
 
-    var layout = {
-      yaxis: { title: "Power Usage (W)" },       // set the y axis title
-      yaxis2: {
-        title: 'Power Usage (W)',
-        overlaying: 'y',
-        side: 'right'
-      },
-      xaxis: {
-        title: `Time (${moment.tz.guess()} GMT${(moment().utcOffset() >= 0 ? '+' : '-') + moment().utcOffset() / 60})`,
-        // title: `Time (UTC)`,
-        showgrid: true,                  // remove the x-axis grid lines
-        // tickformat: "%a %b %e %H:%M:%S %p %Y"              // customize the date format to "month, day"
-      },
-      margin: {                           // update the left, bottom, right, top margin
-        l: 70, b: 70, r: 70, t: 0
-      },
-      // title: 'Power Usage',
-      showlegend: true,
-      legend: { "orientation": "h" }
-    };
-
-    // console.log(traces)
-
-
-    Plotly.newPlot(gd, traces, layout,
-      {
-        showLink: false,
-        displaylogo: false,
-        modeBarButtons: [['toImage', 'zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian']],
-        // modeBarButtonsToAdd: [{ name: 'test', click: (e) => { console.log(e) } }]
-        // displayModeBar: true
-      });
+    Plotly.newPlot(gd, traces, layout, option);
     // });
 
     window.onresize = function () {
