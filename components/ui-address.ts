@@ -158,6 +158,16 @@ export class AddressComponent {
         cb([])
     }
 
+    selectAddr(addr) {
+        let _addr = this.parseAddr(addr)
+
+        this.model['Address1'] = _addr.addr1;
+        this.model['Address2'] = _addr.addr2;
+        this.model['City'] = _addr.suburb;
+        this.model['State'] = _addr.state;
+        this.model['Postcode'] = _addr.postcode;
+    }
+
     parseAddr(addr) {
         let parts = addr.split(',')
         let addr1 = parts[0]
@@ -199,13 +209,7 @@ export class AddressComponent {
         }
 
         if (evt.event.type == 'onselect') {
-            let addr = this.parseAddr(evt.event.title)
-
-            this.model['Address1'] = addr.addr1;
-            this.model['Address2'] = addr.addr2;
-            this.model['City'] = addr.suburb;
-            this.model['State'] = addr.state;
-            this.model['Postcode'] = addr.postcode;
+            this.selectAddr(evt.event.title)
         }
 
         this.onChange.emit({
