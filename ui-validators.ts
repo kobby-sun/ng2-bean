@@ -57,7 +57,7 @@ export function emailValidator(control: FormControl): { [key: string]: any } {
 }
 
 export function latlngValidator(control: FormControl): { [key: string]: any } {
-    var latlngRegexp = /^-?([1-8]?[1-9]|[1-9]0)\.{1}\d{1,6}$/i;
+    var latlngRegexp = /^(\-?\d+(\.\d+)?),\s*(\-?\d+(\.\d+)?)$/;
     if (control.value && !latlngRegexp.test(control.value)) {
         return { invalidLatLng: true, errorMsg: 'Invalid geographic coordinate' };
     }
