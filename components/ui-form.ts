@@ -70,7 +70,7 @@ export interface UIFormControlEvent {
                       class="ui right labeled input fluid"
                       [class.right]="!field.readonly" [class.labeled]="!field.readonly"
                       >
-                    <input #uiComponent (keyup)="change($event)"
+                    <input #uiComponent (change)="change($event)"
                         [attr.readonly]="field.readonly" [attr.disabled]="field.disabled"
                         [formControlName]="form.name + '_' + field.name" type="text" 
                         [placeholder]="field.placeholder || ''" [(ngModel)]="model[field.name]">
