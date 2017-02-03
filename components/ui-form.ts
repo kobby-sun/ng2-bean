@@ -70,10 +70,10 @@ export interface UIFormControlEvent {
                       class="ui right labeled input fluid"
                       [class.right]="!field.readonly" [class.labeled]="!field.readonly"
                       >
-                    <input #uiComponent (change)="change($event)"
+                    <input #uiComponent (ngModelChange)="textChange($event)"
                         [attr.readonly]="field.readonly" [attr.disabled]="field.disabled"
                         [formControlName]="form.name + '_' + field.name" type="text" 
-                        [placeholder]="field.placeholder || ''" [(ngModel)]="model[field.name]">
+                        [placeholder]="field.placeholder || ''" [ngModel]="model[field.name]">
                     <div *ngIf="!field.readonly" class="ui basic label"><i class="fa fa-pencil" aria-hidden="true"></i></div>
                 </div>
 
@@ -149,6 +149,11 @@ export class UIFormControlComponent {
 
     //     }
     // }
+
+    textChange(evt) {
+        this.model[this.field.name] = evt
+        this.change(evt)
+    }
 
     change(evt) {
         this.onChange.emit({
