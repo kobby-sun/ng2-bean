@@ -182,10 +182,10 @@ export class UIFormControlComponent {
         <ui-fc *ngIf="!isArray(field)" (onInit)="init($event)" (onChange)="change($event)" [formGroup]="formGroup" [form]="form" [(model)]="model" [field]="field"></ui-fc>
         <div *ngIf="isArray(field) && field.fields.length > 1" [class]="genFieldsClass(field.fields.length)">
             <div [class]="genFieldClass(fc)" *ngFor="let fc of field.fields">
-                <ui-field (onChange)="change($event)" [formGroup]="formGroup" [form]="form" [(model)]="model" [field]="fc"></ui-field>
+                <ui-field (onInit)="init($event)" (onChange)="change($event)" [formGroup]="formGroup" [form]="form" [(model)]="model" [field]="fc"></ui-field>
             </div> 
         </div>
-        <ui-field *ngIf="isArray(field) && field.fields.length == 1" (onChange)="change($event)" [formGroup]="formGroup" [form]="form" [(model)]="model" [field]="field.fields[0]"></ui-field>
+        <ui-field *ngIf="isArray(field) && field.fields.length == 1" (onInit)="init($event)" (onChange)="change($event)" [formGroup]="formGroup" [form]="form" [(model)]="model" [field]="field.fields[0]"></ui-field>
     `
 })
 export class UIFormFieldComponent {
