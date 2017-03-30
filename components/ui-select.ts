@@ -121,7 +121,7 @@ export class UISelectComponent extends BaseUIComponent {
 
             let opts = {
                 onChange: (value) => {
-                    // console.info('UISelect onChange', value)
+                    // console.log('UISelect onChange', value)
                     let val = this.safeSplit(value)
                     if (util.stringify(this.value) == util.stringify(val)) return;
 
@@ -150,9 +150,8 @@ export class UISelectComponent extends BaseUIComponent {
     }
 
     parseValue(value) {
-        let val = this.safeSplit(value)
-        return this.multiple ?
-             _.sortBy(val) //multi mode
+        return this.multiple || this.allowAdditions ?
+             this.safeSplit(value)//_.sortBy(val) //multi mode
             : value //single mode
     }
 

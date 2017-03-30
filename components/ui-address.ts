@@ -5,9 +5,9 @@ import { UIForm, UIFormControl, UIFormControlEvent, FORM_CONTROL_TYPE } from './
 import { Collection, Entity } from "../model";
 import * as validators from '../ui-validators'
 import * as util from '../util'
+import * as _ from 'lodash'
 
 declare var $;
-declare var _;
 
 @Component({
     selector: 'ui-address',
@@ -16,19 +16,19 @@ declare var _;
 <div class="two fields">
     <div class="field">
         <label>Line 1</label>
-        <ui-fc (onChange)="searchAddr($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.addr1"></ui-fc>
+        <ui-fc (onChange)="searchAddr($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.line1"></ui-fc>
     </div>
 
     <div class="field">
         <label>Line 2</label>
-        <ui-fc (onChange)="change($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.addr2"></ui-fc>
+        <ui-fc (onChange)="change($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.line2"></ui-fc>
     </div>
 </div>
 
 <div class="three fields">
     <div class="eight wide field">
-        <label>City</label>
-        <ui-fc (onChange)="change($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.city"></ui-fc>
+        <label>Suburb</label>
+        <ui-fc (onChange)="change($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.suburb"></ui-fc>
     </div>
     <div class="four wide field">
         <label>State</label>
@@ -36,7 +36,7 @@ declare var _;
     </div>
     <div class="four wide field">
         <label>Postcode</label>
-        <ui-fc (onChange)="change($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.postcode"></ui-fc>
+        <ui-fc (onChange)="change($event)" [formGroup]="formGroup.controls[form.name + '_' + field.name]" [form]="form" [(model)]="model" [field]="fields.postCode"></ui-fc>
     </div>
 </div>
     `,
@@ -63,58 +63,8 @@ export class AddressComponent {
     @Input() formGroup: FormGroup;
     @Output() onChange: EventEmitter<UIFormControlEvent> = new EventEmitter<UIFormControlEvent>();
 
-    au_states = [
-        { value: 'ACT', label: 'Australian Capital Territory' },
-        { value: 'NSW', label: 'New South Wales' },
-        { value: 'NT', label: 'Northern Territory' },
-        { value: 'QLD', label: 'Queensland' },
-        { value: 'SA', label: 'South Australia' },
-        { value: 'TAS', label: 'Tasmania' },
-        { value: 'VIC', label: 'Victoria' },
-        { value: 'WA', label: 'Western Australia' }
-    ]
-
-    fields: any = {}
-
     ngOnInit() {
-        this.fields = {
-            addr1: {
-                type: FORM_CONTROL_TYPE.SEARCH, name: 'Address1', validators: [
-                    ...this.field.validators
-                ],
-                settings: { ds: null },
-                nolbl: true
-            },
-            addr2: {
-                type: FORM_CONTROL_TYPE.TEXT, name: 'Address2', validators: [
-                    // Validators.required
-                ],
-                nolbl: true
-            },
-            city: {
-                type: FORM_CONTROL_TYPE.TEXT, name: 'City', validators: [
-                    ...this.field.validators
-                ],
-                nolbl: true
-            },
-            state: {
-                type: FORM_CONTROL_TYPE.SELECT, name: 'State', validators: [
-                    ...this.field.validators
-                ],
-                opts: this.au_states,
-                nolbl: true
-            },
-            postcode: {
-                type: FORM_CONTROL_TYPE.TEXT, name: 'Postcode', validators: [
-                    ...this.field.validators,
-                    validators.postcodeValidator
-                ],
-                nolbl: true
-            }
-        }
-
         this.init();
-        // console.log('ui-address', this)
     }
 
     ngOnChanges(changes: { [propertyName: string]: SimpleChange }) {
@@ -132,14 +82,18 @@ export class AddressComponent {
     }
 
     init() {
-        let group: any = {};
-        Object.keys(this.fields).forEach(k => {
-            let field = this.fields[k]
-            group[this.form.name + '_' + field.name] = new FormControl(this.model[field.name], field.validators)
-            if (this.model[field.name] != null)
-                group[this.form.name + '_' + field.name].markAsDirty()
-        })
-        this.formGroup.controls[this.form.name + '_' + this.field.name] = new FormGroup(group);
+        // let group: any = {};
+        // Object.keys(this.field.fields).forEach(k => {
+        //     let field = this.field.fields[k]
+        //     group[this.form.name + '_' + field.name] = new FormControl(this.model[field.name], field.validators)
+        //     if (this.model[field.name] != null)
+        //         group[this.form.name + '_' + field.name].markAsDirty()
+        // })
+        // this.formGroup.controls[this.form.name + '_' + this.field.name] = new FormGroup(group);
+    }
+
+    f(name) {
+        return _.find<any>(this.field.fields, fd => fd.name == `${this.field.name}.${name}`)
     }
 
     constructor(protected http: Http) {
@@ -161,11 +115,11 @@ export class AddressComponent {
     selectAddr(addr) {
         let _addr = this.parseAddr(addr)
 
-        this.model['Address1'] = _addr.addr1;
-        this.model['Address2'] = _addr.addr2;
-        this.model['City'] = _addr.suburb;
-        this.model['State'] = _addr.state;
-        this.model['Postcode'] = _addr.postcode;
+        this.model[`${this.field.name}.line1`] = _addr.addr1;
+        this.model[`${this.field.name}.line2`] = _addr.addr2;
+        this.model[`${this.field.name}.suburb`] = _addr.suburb;
+        this.model[`${this.field.name}.state`] = _addr.state;
+        this.model[`${this.field.name}.postCode`] = _addr.postcode;
     }
 
     parseAddr(addr) {
@@ -192,9 +146,10 @@ export class AddressComponent {
     }
 
     searchAddr(evt) {
-        if (this.validateSearch(this.model['Address1']) && this.lastSearch != this.model['Address1']) {
-            this.lastSearch = this.model['Address1']
-            // this.energyShareService.searchAddress(this.model['Address1']).subscribe(
+        let line1 = this.model[`${this.field.name}.line1`]
+        if (this.validateSearch(line1) && this.lastSearch != line1) {
+            this.lastSearch = line1
+            // this.energyShareService.searchAddress(this.model['line1']).subscribe(
             //     results => {
             //         // console.log(results)
             //         if (results && results.length > 0)
@@ -204,7 +159,7 @@ export class AddressComponent {
             this.query(results => {
                 // console.log(results)
                 if (results && results.length > 0)
-                    this.fields.addr1.settings = { ds: results };
+                    this.f('line1').settings = { ds: results };
             })
         }
 

@@ -24,7 +24,7 @@ export class UIMiniChartComponent {
     @ViewChild('chart') chart: ElementRef;
 
     @Input()
-    set ds(value: string){
+    set ds(value: string) {
         this._ds = value;
     }
 
@@ -36,6 +36,8 @@ export class UIMiniChartComponent {
     }
 
     init() {
+        if (this.feed == '') return;
+        
         setTimeout(() => {
             // this.inited = false;
 
@@ -68,7 +70,7 @@ export class UIMiniChartComponent {
             let chng = changes[propName];
             let cur = util.stringify(chng.currentValue);
             let prev = util.stringify(chng.previousValue);
-            // console.debug(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
+            console.debug(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
 
             if (prev != '{}') {
                 // console.log('DatetimePickerComponent ngOnChanges')

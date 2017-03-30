@@ -15,7 +15,7 @@ import * as util from "../util";
 declare var $: any;
 
 // Import the application components and services.
-import { createTemplateRenderer } from "../directives/template-renderer.directive";
+// import { createTemplateRenderer } from "../directives/template-renderer.directive";
 
 const UI_SELECT_VALUE_ACCESSOR = {
     provide: NG_VALUE_ACCESSOR,

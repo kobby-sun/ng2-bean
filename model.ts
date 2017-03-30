@@ -1,6 +1,8 @@
 import { List, Map } from 'immutable';
-import { FormControl, FormGroup, FormArray, FormBuilder, Validators} from '@angular/forms';
+import { FormControl, FormGroup, FormArray, FormBuilder, Validators } from '@angular/forms';
 
+import * as flatten from 'flat'
+import * as _ from 'lodash'
 
 export interface Undoable {
     commit()
@@ -93,10 +95,18 @@ export class Entity implements Undoable {
     // [index: string]: any;
 
     get(key: string) {
-        return <any>this._data.get(key);
+        // let keys = key.split('.')
+        // if (keys.length > 1)
+        //     return <any>this._data.getIn(keys);
+        // else
+            return <any>this._data.get(key);
     }
     set(key: string, value: any) {
-        this._data = this._data.set(key, value)
+        // let keys = key.split('.')
+        // if (keys.length > 1)
+        //     this._data = this._data.setIn(keys, value)
+        // else
+            this._data = this._data.set(key, value)
     }
 
     constructor(protected data: any = undefined) {
@@ -107,8 +117,17 @@ export class Entity implements Undoable {
         return this._data
     }
 
-    get js() {
-        return this._data.toJS()
+    get js() : any {
+        let output = this._data.toJS()
+        console.info('output', output)
+        // //clean up
+        // Object.keys(output).forEach(k => {
+        //     if (k.indexOf('.') != -1){
+        //         delete output[k]
+        //     }
+        // })
+        let tree = flatten.unflatten(output)
+        return tree
     }
 
     commit() {

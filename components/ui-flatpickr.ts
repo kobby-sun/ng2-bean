@@ -27,8 +27,8 @@ const DT_PICKER_VALUE_ACCESSOR = {
         <div class='ui right labeled input fluid' [class.error]="isErr">
             <input [id]="id" #datetimepicker1 type='text' [(ngModel)]="value" />
             <div class="ui basic label">
-                <span *ngIf="!(options.date != null && !options.date)" class="fa fa-calendar"></span>
-                <span *ngIf="options.date != null && !options.date" class="fa fa-clock-o"></span>
+                <span *ngIf="isCalendar" class="fa fa-calendar"></span>
+                <span *ngIf="isClock" class="fa fa-clock-o"></span>
             </div>
         </div>
     `
@@ -43,6 +43,13 @@ class DatetimePickerComponent extends BaseUIComponent {
     inited: boolean = false;
     id: string = util.uuid()
     dt: any
+
+    get isCalendar() :boolean{
+        return !(this.options.date != null && !this.options.date);
+    }
+    get isClock() :boolean{
+        return this.options.date != null && !this.options.date;
+    }
 
     @ViewChild('datetimepicker1') dateTimePicker: ElementRef;
 
@@ -137,7 +144,8 @@ class DatetimePickerComponent extends BaseUIComponent {
                 // console.log('DatetimePickerComponent ngOnChanges')
                 // this.cd.detectChanges();
                 // this.init();
-                this.dt.destroy();
+                if (this.dt)
+                    this.dt.destroy();
                 this.init();
                 // this.dt.set('minDate', chng.currentValue.min)
                 // this.dt.set('maxDate', chng.currentValue.max)
@@ -148,8 +156,8 @@ class DatetimePickerComponent extends BaseUIComponent {
 
     ngOnDestroy() {
         // console.log('dispose ui flatpickr')
-        // if (this.dt)
-        //     this.dt.destroy()
+        if (this.dt)
+            this.dt.destroy()
     }
 }
 

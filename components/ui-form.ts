@@ -5,8 +5,9 @@ import * as util from '../util'
 import * as validators from '../ui-validators'
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import * as flatten from 'flat'
+import * as _ from 'lodash'
 
-declare var _;
 declare var $;
 
 export enum FORM_CONTROL_TYPE {
@@ -23,33 +24,41 @@ export enum FORM_CONTROL_TYPE {
     ACCORDION,
     FIELDS,
     CHECKBOX,
-    SEARCH
+    SEARCH,
+    HIDDEN
 }
 
 export interface UIForm {
+    formComponent?: UIFormComponent,
     name: string,
     fields: Array<UIFormControl>;
 }
 export interface UIFormControl {
-    id: string,
+    id?: string,
     type: FORM_CONTROL_TYPE,
-    group: boolean,
-    name: string,
-    label: string,
-    placeholder: string,
-    validators: Array<ValidatorFn>,
-    options: Array<any>,
-    ds: Function,
-    disabled: boolean,
-    readonly: boolean,
-    hidden: boolean,
-    value: any,
-    fields: any
+    group?: boolean,
+    name?: string,
+    label?: string,
+    placeholder?: string,
+    validators?: Array<ValidatorFn>,
+    options?: Array<any>,
+    ds?: Function,
+    disabled?: boolean,
+    readonly?: boolean,
+    hidden?: boolean,
+    value?: any,
+    fields?: any,
+    row?: boolean,
+    nolbl?: boolean,
+    nested?: boolean,
+    opts?: Array<any>,
+    settings?: any;
 }
 
 export interface UIFormEvent {
     event: any;
     model: Entity;
+    form: UIForm;
 }
 
 export interface UIFormControlEvent {
@@ -73,7 +82,7 @@ export interface UIFormControlEvent {
                     <input #uiComponent (ngModelChange)="textChange($event)"
                         [attr.readonly]="field.readonly" [attr.disabled]="field.disabled"
                         [formControlName]="form.name + '_' + field.name" type="text" 
-                        [placeholder]="field.placeholder || ''" [ngModel]="model[field.name]">
+                        [placeholder]="field.placeholder || ''" [ngModel]="model[field.name]" />
                     <div *ngIf="!field.readonly" class="ui basic label"><i class="fa fa-pencil" aria-hidden="true"></i></div>
                 </div>
 
@@ -105,8 +114,8 @@ export interface UIFormControlEvent {
                 </datetime-picker>
 
                 <ui-address #uiComponent (onChange)="change($event)" [formGroup]="formGroup" [form]="form" 
-                    *ngIf="formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.ADDRESS" 
-                    [(model)]="model[field.name]" [field]="field">
+                    *ngIf="field.type == FORM_CONTROL_TYPE.ADDRESS" 
+                    [(model)]="model" [field]="field">
                 </ui-address>
 
                 <div *ngIf="field.type == FORM_CONTROL_TYPE.LABEL" class="ui label">
@@ -116,6 +125,8 @@ export interface UIFormControlEvent {
                 <div class="ui pointing red basic label" *ngIf="!field.group && formGroup.controls[form.name + '_' + field.name] != null && !formGroup.controls[form.name + '_' + field.name].pristine && formGroup.controls[form.name + '_' + field.name].invalid">
                     {{formGroup.controls[form.name + '_' + field.name].errors.required ? 'Required' : formGroup.controls[form.name + '_' + field.name].errors.errorMsg}}
                 </div>
+
+                <input *ngIf="field.type == FORM_CONTROL_TYPE.HIDDEN" type="hidden" [formControlName]="form.name + '_' + field.name" [(ngModel)]="model[field.name]" />
             </div>
     `
 })
@@ -134,7 +145,7 @@ export class UIFormControlComponent {
 
     ngOnInit() {
         this.onInit.emit({
-            event: null,
+            event: 'init',
             source: this,
             model: this.model
         })
@@ -146,13 +157,15 @@ export class UIFormControlComponent {
     //         let cur = util.stringify(chng.currentValue);
     //         let prev = util.stringify(chng.previousValue);
     //         console.debug(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
-
     //     }
     // }
 
     textChange(evt) {
-        this.model[this.field.name] = evt
-        this.change(evt)
+        let changed = this.model[this.field.name] != evt
+        if (changed) {
+            this.model[this.field.name] = evt
+            this.change(evt)
+        }
     }
 
     change(evt) {
@@ -171,7 +184,7 @@ export class UIFormControlComponent {
         });
     }
 
-    mergeOpts(o1, o2){
+    mergeOpts(o1, o2) {
         return Object.assign(o1, o2)
     }
 }
@@ -180,10 +193,13 @@ export class UIFormControlComponent {
     selector: 'ui-field',
     template: `
         <ui-fc *ngIf="!isArray(field)" (onInit)="init($event)" (onChange)="change($event)" [formGroup]="formGroup" [form]="form" [(model)]="model" [field]="field"></ui-fc>
-        <div *ngIf="isArray(field) && field.fields.length > 1" [class]="genFieldsClass(field.fields.length)">
+        <div *ngIf="isArray(field) && field.fields.length > 1 && !field.row" [class]="genFieldsClass(field.fields.length)">
             <div [class]="genFieldClass(fc)" *ngFor="let fc of field.fields">
                 <ui-field (onInit)="init($event)" (onChange)="change($event)" [formGroup]="formGroup" [form]="form" [(model)]="model" [field]="fc"></ui-field>
             </div> 
+        </div>
+        <div *ngIf="isArray(field) && field.fields.length > 1 && field.row">
+            <ui-field *ngFor="let fc of field.fields" (onInit)="init($event)" (onChange)="change($event)" [formGroup]="formGroup" [form]="form" [(model)]="model" [field]="fc"></ui-field>
         </div>
         <ui-field *ngIf="isArray(field) && field.fields.length == 1" (onInit)="init($event)" (onChange)="change($event)" [formGroup]="formGroup" [form]="form" [(model)]="model" [field]="field.fields[0]"></ui-field>
     `
@@ -198,7 +214,7 @@ export class UIFormFieldComponent {
 
     FORM_CONTROL_TYPE = FORM_CONTROL_TYPE
 
-    isArray(val) { return val.fields != null && val.fields.length > 0; }
+    isArray(val) { return val.fields != null && val.fields.length > 0 && !val.nested; }
 
     genFieldsClass(len) {
         return util.toWords(len) + 'fields';
@@ -210,24 +226,16 @@ export class UIFormFieldComponent {
     }
 
     init(evt: any) {
-        this.onInit.emit({
-            event: evt,
-            source: this,
-            model: this.model
-        });
+        this.onInit.emit(evt);
     }
 
     change(evt: any) {
-        this.onChange.emit({
-            event: evt,
-            source: this,
-            model: this.model
-        });
+        this.onChange.emit(evt);
     }
 }
 
 export class UIFormHelper {
-    static findField(form: UIForm, name: string) {
+    static findField(form: UIForm, name: string): UIFormControl {
         let field = null;
         let find = fields => {
             fields.forEach(f => {
@@ -311,7 +319,8 @@ export class UIFormComponent {
     close(evt: any) {
         this.onClose.emit({
             event: evt,
-            model: this.model
+            model: this.model,
+            form: this.form
         });
     }
 
@@ -319,7 +328,8 @@ export class UIFormComponent {
         this.busy = true;
         this.onSubmit.emit({
             event: evt,
-            model: this.model
+            model: this.model,
+            form: this.form
         });
         setTimeout(() => {
             this.busy = false;
@@ -342,26 +352,41 @@ export class UIFormComponent {
                 this._initFields(o, fields)
             });
         } else {
-            fields[f.name] = f.value
+            if (!f.nested)
+                fields[f.name] = f.value
         }
     }
 
     init() {
         if (!this.form) return;
 
+        //ref to root Form Component
+        this.form.formComponent = this;
+
         let fields = { _id: util.uuid() }
         this.form.fields.forEach(o => {
             this._initFields(o, fields)
         })
 
+        // console.log(fields)
+
         Entity.genProps(fields)
 
-        //assign init values
-        if (this.value)
-            fields = _.assignIn(fields, this.value);
-
         this.model = new Entity(fields)
-        // console.log('this.model', this.model)
+
+        //assign init values
+        if (this.value) {
+            // console.log('ui form value', this.value)
+            let flatval = flatten(this.value)
+            Object.keys(flatval).forEach(k => {
+                if (k.endsWith('.0')) flatval[k.substr(0, k.length - 2)] = this.value[k.substr(0, k.length - 2)]
+                if (/\.[0-9]+/g.exec(k)) delete flatval[k]
+            })
+            // console.log('ui form value flatten', flatval)
+            this.model = _.assignIn(this.model, flatval);
+            // console.log(this.model)
+        }
+
         this.initForm()
     }
 
@@ -373,7 +398,7 @@ export class UIFormComponent {
         } else {
             if (f.group) {
                 group[this.form.name + '_' + f.name] = new FormGroup({})
-            } else if (!f.hidden) {
+            } else if (!f.hidden && !f.nested) {
                 group[this.form.name + '_' + f.name] = new FormControl(this.model[f.name], f.validators)
                 if (this.model[f.name] != null)
                     group[this.form.name + '_' + f.name].markAsDirty()
@@ -388,6 +413,8 @@ export class UIFormComponent {
             this._initFormGroup(o, group)
         })
 
+        // console.log('form group', group)
+
         this.model.fg = new FormGroup(group);
 
         const formValueChanges$ = this.model.fg.valueChanges;
@@ -395,7 +422,8 @@ export class UIFormComponent {
             // console.log('ui-form changed', this.model)
             this.onFormChange.emit({
                 event: null,
-                model: this.model
+                model: this.model,
+                form: this.form
             });
         });
     }

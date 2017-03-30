@@ -65,7 +65,7 @@ export class ToggleComponent extends BaseUIComponent {
                 on: this.on,
                 off: this.off,
                 onstyle: this.onStyle,
-                offStyle: this.offStyle
+                offstyle: this.offStyle
             });
 
             $(ele).bootstrapToggle(this.disabled ? 'disable' : 'enable')
@@ -76,7 +76,7 @@ export class ToggleComponent extends BaseUIComponent {
             $(ele).change(function () {
                 let val = $(this).prop('checked')
                 if (self.value != val) {
-                    console.log('ToggleComponent checked changed to ' + val);
+                    // console.log('ToggleComponent checked changed to ' + val);
                     self.value = val;
                     self.valueUpdated.emit(val)
                 }
