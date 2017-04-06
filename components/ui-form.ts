@@ -7,6 +7,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as flatten from 'flat'
 import * as _ from 'lodash'
+import { Observable } from 'rxjs/Observable'
+import { UILoaderComponent } from './ui-loader'
 
 declare var $;
 
@@ -30,6 +32,7 @@ export enum FORM_CONTROL_TYPE {
 
 export interface UIForm {
     formComponent?: UIFormComponent,
+    viewMode?: boolean,
     name: string,
     fields: Array<UIFormControl>;
 }
@@ -39,6 +42,7 @@ export interface UIFormControl {
     group?: boolean,
     name?: string,
     label?: string,
+    hint?: string,
     placeholder?: string,
     validators?: Array<ValidatorFn>,
     options?: Array<any>,
@@ -53,6 +57,7 @@ export interface UIFormControl {
     nested?: boolean,
     opts?: Array<any>,
     settings?: any;
+    parser?: (field: UIFormControl, val: any) => any;
 }
 
 export interface UIFormEvent {
@@ -72,34 +77,29 @@ export interface UIFormControlEvent {
     selector: 'ui-fc',
     template: `
             <div *ngIf="!field.hidden" [formGroup]="formGroup" class="field">
-                <label *ngIf="!field.nolbl">{{field.label}}</label>
-                
-                <div *ngIf="formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.TEXT" 
-                      [class.error]="formGroup.controls[form.name + '_' + field.name] != null && !formGroup.controls[form.name + '_' + field.name].pristine && formGroup.controls[form.name + '_' + field.name].invalid"
-                      class="ui right labeled input fluid"
-                      [class.right]="!field.readonly" [class.labeled]="!field.readonly"
-                      >
-                    <input #uiComponent (ngModelChange)="textChange($event)"
-                        [attr.readonly]="field.readonly" [attr.disabled]="field.disabled"
-                        [formControlName]="form.name + '_' + field.name" type="text" 
-                        [placeholder]="field.placeholder || ''" [ngModel]="model[field.name]" />
-                    <div *ngIf="!field.readonly" class="ui basic label"><i class="fa fa-pencil" aria-hidden="true"></i></div>
-                </div>
+                <label *ngIf="!field.nolbl">{{field.label}} {{!viewMode ? field.hint : ''}}</label>
 
-                <ui-search #uiComponent [settings]="field.settings" *ngIf="formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.SEARCH" 
+                <ui-input #uiComponent [settings]="field.settings" *ngIf="!viewMode && formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.TEXT" 
+                        (valueUpdated)="change($event)" [isErr]="formGroup.controls[form.name + '_' + field.name] != null && !formGroup.controls[form.name + '_' + field.name].pristine && formGroup.controls[form.name + '_' + field.name].invalid"
+                        [readonly]="field.readonly" [disabled]="field.disabled" [placeholder]="field.placeholder"
+                        [formControlName]="form.name + '_' + field.name" [(ngModel)]="model[field.name]">
+                </ui-input>
+
+                <ui-search #uiComponent [settings]="field.settings" *ngIf="!viewMode && formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.SEARCH" 
                         (valueUpdated)="change($event)"
                         [placeholder]="field.placeholder || ''" [(ngModel)]="model[field.name]" [formControlName]="form.name + '_' + field.name">
                 </ui-search>
 
-                <ui-checkbox #uiComponent [settings]="field.settings" *ngIf="formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.CHECKBOX" 
+                <ui-checkbox #uiComponent [settings]="field.settings" *ngIf="!viewMode && formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.CHECKBOX" 
                         (valueUpdated)="change($event)"
                         [label]="field.placeholder" [(ngModel)]="model[field.name]" [formControlName]="form.name + '_' + field.name">
                 </ui-checkbox>
 
-                <ui-toggle #uiComponent (valueUpdated)="change($event)" *ngIf="formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.TOGGLE" [formControlName]="form.name + '_' + field.name"
+                <ui-toggle #uiComponent [settings]="field.settings" (valueUpdated)="change($event)" *ngIf="!form.viewMode && formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.TOGGLE" [formControlName]="form.name + '_' + field.name"
                     [(ngModel)]="model[field.name]"></ui-toggle>
 
-                <ui-select #uiComponent [settings]="field.settings" (valueUpdated)="change($event)" [isErr]="formGroup.controls[form.name + '_' + field.name] != null && !formGroup.controls[form.name + '_' + field.name].pristine && formGroup.controls[form.name + '_' + field.name].invalid" *ngIf="formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.SELECT" [formControlName]="form.name + '_' + field.name"
+                <ui-select #uiComponent [settings]="field.settings" (valueUpdated)="change($event)" [isErr]="formGroup.controls[form.name + '_' + field.name] != null && !formGroup.controls[form.name + '_' + field.name].pristine && formGroup.controls[form.name + '_' + field.name].invalid" 
+                    *ngIf="!viewMode && formGroup.controls[form.name + '_' + field.name] != null && field.type == FORM_CONTROL_TYPE.SELECT" [formControlName]="form.name + '_' + field.name"
                         [placeholder]="field.placeholder || ''" [(ngModel)]="model[field.name]" [items]="field.opts">
                     <template let-a="item" let-index="index">
                         <div class="item" [attr.data-value]="a.value">{{a.label}}</div>
@@ -107,26 +107,26 @@ export interface UIFormControlEvent {
                 </ui-select>
                 
                 <datetime-picker #uiComponent (valueUpdated)="change($event)" [isErr]="formGroup.controls[form.name + '_' + field.name] != null && !formGroup.controls[form.name + '_' + field.name].pristine && formGroup.controls[form.name + '_' + field.name].invalid" 
-                    *ngIf="formGroup.controls[form.name + '_' + field.name] != null && (field.type == FORM_CONTROL_TYPE.DATE || field.type == FORM_CONTROL_TYPE.DATETIME || field.type == FORM_CONTROL_TYPE.TIME)" 
+                    *ngIf="!viewMode && formGroup.controls[form.name + '_' + field.name] != null && (field.type == FORM_CONTROL_TYPE.DATE || field.type == FORM_CONTROL_TYPE.DATETIME || field.type == FORM_CONTROL_TYPE.TIME)" 
                     [options]='mergeOpts({"date": field.type != FORM_CONTROL_TYPE.TIME, "time": field.type != FORM_CONTROL_TYPE.DATE}, field.settings)' 
                     [formControlName]="form.name + '_' + field.name" 
                     [(ngModel)]="model[field.name]">
                 </datetime-picker>
 
                 <ui-address #uiComponent (onChange)="change($event)" [formGroup]="formGroup" [form]="form" 
-                    *ngIf="field.type == FORM_CONTROL_TYPE.ADDRESS" 
+                    *ngIf="!viewMode && field.type == FORM_CONTROL_TYPE.ADDRESS" 
                     [(model)]="model" [field]="field">
                 </ui-address>
 
-                <div *ngIf="field.type == FORM_CONTROL_TYPE.LABEL" class="ui label">
-                    {{model.js[field.name]}}
+                <div *ngIf="model[field.name] != null && (viewMode || field.type == FORM_CONTROL_TYPE.LABEL)" class="ui label">
+                    {{parseVal(model[field.name])}}
                 </div>
                 
-                <div class="ui pointing red basic label" *ngIf="!field.group && formGroup.controls[form.name + '_' + field.name] != null && !formGroup.controls[form.name + '_' + field.name].pristine && formGroup.controls[form.name + '_' + field.name].invalid">
+                <div class="ui pointing red basic label" *ngIf="!viewMode && !field.group && formGroup.controls[form.name + '_' + field.name] != null && !formGroup.controls[form.name + '_' + field.name].pristine && formGroup.controls[form.name + '_' + field.name].invalid">
                     {{formGroup.controls[form.name + '_' + field.name].errors.required ? 'Required' : formGroup.controls[form.name + '_' + field.name].errors.errorMsg}}
                 </div>
 
-                <input *ngIf="field.type == FORM_CONTROL_TYPE.HIDDEN" type="hidden" [formControlName]="form.name + '_' + field.name" [(ngModel)]="model[field.name]" />
+                <input *ngIf="!viewMode && field.type == FORM_CONTROL_TYPE.HIDDEN" type="hidden" [formControlName]="form.name + '_' + field.name" [(ngModel)]="model[field.name]" />
             </div>
     `
 })
@@ -137,7 +137,6 @@ export class UIFormControlComponent {
     @Input() formGroup: FormGroup;
     @Output() onInit: EventEmitter<UIFormControlEvent> = new EventEmitter<UIFormControlEvent>();
     @Output() onChange: EventEmitter<UIFormControlEvent> = new EventEmitter<UIFormControlEvent>();
-    @Output() onSelect: EventEmitter<UIFormControlEvent> = new EventEmitter<UIFormControlEvent>();
 
     FORM_CONTROL_TYPE = FORM_CONTROL_TYPE
 
@@ -151,6 +150,12 @@ export class UIFormControlComponent {
         })
     }
 
+    get viewMode(): boolean {
+        return this.form.viewMode
+            && !this.field.nested
+            && this.field.type != FORM_CONTROL_TYPE.HIDDEN;
+    }
+
     // ngOnChanges(changes: { [propertyName: string]: SimpleChange }) {
     //     for (let propName in changes) {
     //         let chng = changes[propName];
@@ -160,14 +165,6 @@ export class UIFormControlComponent {
     //     }
     // }
 
-    textChange(evt) {
-        let changed = this.model[this.field.name] != evt
-        if (changed) {
-            this.model[this.field.name] = evt
-            this.change(evt)
-        }
-    }
-
     change(evt) {
         this.onChange.emit({
             event: evt,
@@ -176,16 +173,28 @@ export class UIFormControlComponent {
         });
     }
 
-    select(evt) {
-        this.onSelect.emit({
-            event: evt,
-            source: this,
-            model: this.model
-        });
-    }
-
     mergeOpts(o1, o2) {
         return Object.assign(o1, o2)
+    }
+
+    parseVal(val) {
+        // console.log(this.field.name, this.field.parser)
+        return this.field.parser ? this.field.parser(this.field, val) : val;
+    }
+
+    ngOnChanges(changes: { [propertyName: string]: SimpleChange }) {
+
+        for (let propName in changes) {
+            let chng = changes[propName];
+            let cur = util.stringify(chng.currentValue);
+            let prev = util.stringify(chng.previousValue);
+            // console.debug(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
+
+            if (prev != '{}') {
+
+                // console.info(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
+            }
+        }
     }
 }
 
@@ -266,13 +275,14 @@ export class UIFormHelper {
             <div class="ui huge loader"></div>
         </div>
         <div class="container-fluid">
-            <form *ngIf="form" [name]="form.name" [formGroup]="model.fg" class="ui form">
-                <div class="form-group ui-form-row" *ngFor="let f of form.fields">
+            <ui-loader #loader></ui-loader>
+            <form *ngIf="form && model.fg" [name]="form.name" [formGroup]="model.fg" class="ui form">
+                <div class="form-group ui-form-row" *ngFor="let f of fields | async">
                     <!--normal field-->
                     <ui-field *ngIf="!f.hidden && f.type != FORM_CONTROL_TYPE.ACCORDION" [formGroup]="model.fg" 
                               (onInit)="fc_init($event)" (onChange)="fc_change($event)" [form]="form" [(model)]="model" [field]="f"></ui-field>
                     <!--accordion field-->
-                    <div *ngIf="!f.hidden && f.type == FORM_CONTROL_TYPE.ACCORDION" ui-accordion class="ui styled fluid accordion">
+                    <div *ngIf="!form.viewMode && !f.hidden && f.type == FORM_CONTROL_TYPE.ACCORDION" ui-accordion class="ui styled fluid accordion">
                         <div class="active title">
                             <i class="dropdown icon"></i> {{f.label}}
                         </div>
@@ -282,9 +292,18 @@ export class UIFormHelper {
                             </div>
                         </div>
                     </div>
+                    <!--viewMode field-->
+                    <div *ngIf="form.viewMode && !f.hidden && f.type == FORM_CONTROL_TYPE.ACCORDION" class="ui segment">
+                        <div class="ui top left attached label">{{f.label}}</div>
+                        <div class="ui form">
+                        <br/>
+                        <ui-field (onInit)="fc_init($event)" (onChange)="fc_change($event)" [formGroup]="model.fg" [form]="form" [(model)]="model" [field]="f"></ui-field>
+                    </div>
+                </div>
+
                 </div>
                 <br/>
-                <div class="form-group row">
+                <div *ngIf="!form.viewMode" class="form-group row">
                     <div class="offset-sm-2 col-sm-10">
                         <button [disabled]="!(model.fg && model.fg.valid)" (click)="submit($event)" type="submit" class="ui primary button ui-form-submit">
                         Save
@@ -300,6 +319,7 @@ export class UIFormHelper {
     `
 })
 export class UIFormComponent {
+    @Input() key: string;
     @Input() form: UIForm;
     @Input() value: any;
     @Output() onSubmit: EventEmitter<UIFormEvent> = new EventEmitter<UIFormEvent>();
@@ -314,7 +334,13 @@ export class UIFormComponent {
 
     busy: boolean = false;
 
+    @ViewChild('loader') loader: UILoaderComponent;
+
     isArray(val) { return val.fields != null && val.fields.length > 0; }
+
+    get fields() {
+        return Observable.of(this.form.fields)
+    }
 
     close(evt: any) {
         this.onClose.emit({
@@ -360,8 +386,10 @@ export class UIFormComponent {
     init() {
         if (!this.form) return;
 
+        this.loader.hidden = false;
+
         //ref to root Form Component
-        this.form.formComponent = this;
+        // this.form.formComponent = this;
 
         let fields = { _id: util.uuid() }
         this.form.fields.forEach(o => {
@@ -388,6 +416,8 @@ export class UIFormComponent {
         }
 
         this.initForm()
+
+        this.loader.hidden = true;
     }
 
     _initFormGroup(f: UIFormControl, group: any) {
@@ -429,6 +459,7 @@ export class UIFormComponent {
     }
 
     ngOnInit() {
+        this.loader.element.nativeElement.style.padding = '20px'
         this.init()
     }
 
@@ -450,7 +481,7 @@ export class UIFormComponent {
             let chng = changes[propName];
             let cur = util.stringify(chng.currentValue);
             let prev = util.stringify(chng.previousValue);
-            // console.debug(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
+            console.debug(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
 
             if (prev != '{}') {
                 this.init()
@@ -460,7 +491,7 @@ export class UIFormComponent {
     }
 
     ngOnDestroy() {
-
+        
     }
 
 }

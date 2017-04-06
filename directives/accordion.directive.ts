@@ -20,8 +20,11 @@ export class UIAccordion {
         let initAccordion = () => {
             $(this.element.nativeElement).accordion({
                 exclusive: this.exclusive,
-                onChange: (value) => {
-                    this.valueUpdated.emit(value);
+                onOpen: () => {
+                    this.valueUpdated.emit(true);
+                },
+                onClose: () => {
+                    this.valueUpdated.emit(false);
                 }
             })
         }

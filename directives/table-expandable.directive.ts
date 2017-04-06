@@ -17,7 +17,7 @@ export class TableExpandable {
     @Input() firstLevelOnly: boolean = false;
     @Output() onExpand: EventEmitter<any> = new EventEmitter<any>()
 
-    private toggleclick(tr) {
+    private toggleAccordion(tr) {
         // let hidden = !tr.next('tr').is(":hidden")
         // tr.next('tr').css('display', hidden ? 'none' : 'table-row')
         // tr.find(".table-expandable-arrow").removeClass('glyphicon-chevron-down')
@@ -50,6 +50,44 @@ export class TableExpandable {
         // tr.find(".table-expandable-arrow").toggleClass("glyphicon-chevron-down glyphicon-chevron-up");
     }
 
+    expandAccordion(evt: Event) {
+        //toggle current schedules section
+        let tr = $(event.target).closest('tr').next('tr')
+        if (tr.is(":hidden")) {
+            tr.toggle('fast');
+            tr.prev().find(".table-expandable-arrow").toggleClass("glyphicon-chevron-down glyphicon-chevron-up");
+        }
+    }
+
+    collapseAccordion(evt: Event) {
+        //toggle current schedules section
+        let tr = $(event.target).closest('tr').next('tr')
+        if (!tr.is(":hidden")) {
+            tr.toggle('fast');
+            tr.prev().find(".table-expandable-arrow").toggleClass("glyphicon-chevron-up glyphicon-chevron-down");
+        }
+    }
+
+    toggleAccordions(close: boolean = false) {
+        //toggle all schedules sections
+        let tbls = $(this.element.nativeElement).parent().find('table')
+        if (this.firstLevelOnly)
+            tbls = tbls.first()
+
+        tbls.filter('.table-expandable').each(function () {
+            let table = $(this)
+            table.children('tbody').children('tr').filter(':even').each(function () {
+                var element = $(this)
+                let tr = element.next('tr')
+                let assert = close ? !tr.is(":hidden") : tr.is(":hidden")
+                if (assert) {
+                    tr.toggle('fast');
+                    tr.prev().find(".table-expandable-arrow").toggleClass("glyphicon-chevron-down glyphicon-chevron-up");
+                }
+            });
+        });
+    }
+
     initTbl() {
         //@@@ nested mode
         let tbls = $(this.element.nativeElement).parent().find('table')
@@ -65,7 +103,7 @@ export class TableExpandable {
         //         console.log($(this), e)
         //         e.stopPropagation()
         //         var tr = $(this).closest('tr')
-        //         self.toggleclick(tr)
+        //         self.toggleAccordion(tr)
         //     });
         //     // table.children('tbody').children('tr').filter(':even').each(function () {
         //     //     var element = $(this);
@@ -74,7 +112,7 @@ export class TableExpandable {
         //     table.children('tbody').children('tr').find('.table-expandable-arrow').click(function (e) {
         //         e.stopPropagation()
         //         var tr = $(this).parent().parent()
-        //         self.toggleclick(tr)
+        //         self.toggleAccordion(tr)
         //     });
 
         //     // table.children('tbody').children('tr').filter(':odd').each(function () {
@@ -96,7 +134,7 @@ export class TableExpandable {
             table.children('tbody').children('tr').filter(':even').find('.table-row-toggle').click(function (e) {
                 e.stopPropagation()
                 var tr = $(this).closest('tr')
-                self.toggleclick(tr)
+                self.toggleAccordion(tr)
             });
             // table.children('tbody').children('tr').filter(':even').each(function () {
             //     var element = $(this);
@@ -105,7 +143,7 @@ export class TableExpandable {
             table.children('tbody').children('tr').filter(':even').find('.table-expandable-arrow').click(function (e) {
                 e.stopPropagation()
                 var tr = $(this).parent().parent()
-                self.toggleclick(tr)
+                self.toggleAccordion(tr)
             });
 
             // table.children('tbody').children('tr').filter(':odd').each(function () {

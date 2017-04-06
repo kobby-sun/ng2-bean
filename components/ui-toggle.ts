@@ -30,6 +30,8 @@ const UI_TOGGLE_VALUE_ACCESSOR = {
     `
 })
 export class ToggleComponent extends BaseUIComponent {
+    @Input() settings: any;
+    
     // @Input() value: boolean = false;
     @Input() disabled: boolean = false;
     @Input() label: string;

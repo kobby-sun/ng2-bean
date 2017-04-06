@@ -119,7 +119,7 @@ export class Entity implements Undoable {
 
     get js() : any {
         let output = this._data.toJS()
-        console.info('output', output)
+        // console.info('output', output)
         // //clean up
         // Object.keys(output).forEach(k => {
         //     if (k.indexOf('.') != -1){
