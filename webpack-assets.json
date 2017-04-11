@@ -1,11 +1,11 @@
 {
   "vendor": {
-    "js": "vendor.b841d645bec46cd4aab3.bundle.js"
+    "js": "https://kobby-sun.github.io/ng2-bean/vendor.c25a651eedcb623359af.bundle.js"
   },
   "main": {
-    "js": "main.d658f45f9192b098f883.bundle.js"
+    "js": "https://kobby-sun.github.io/ng2-bean/main.39b1ad3b3836fd4dbe70.bundle.js"
   },
   "polyfills": {
-    "js": "polyfills.456998b7eafe336d92c8.bundle.js"
+    "js": "https://kobby-sun.github.io/ng2-bean/polyfills.0f383313eecbfff753cb.bundle.js"
   }
 }
