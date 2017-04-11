@@ -25,50 +25,5 @@ import 'peity/jquery.peity.min';
 { rel: "stylesheet", href: "/assets/css/bootstrap-toggle.min.css" }
 ```
 
-
-# UI Components (TO BE UPDATED)
-
-```
-<UISelectComponent></UISelectComponent>
-```
-
-```
-<ToggleComponent></ToggleComponent>
-```
-
-```
-<CheckboxComponent></CheckboxComponent>
-```
-
-```
-<UILoaderComponent></UILoaderComponent>
-```
-
-```
-<AddressComponent></AddressComponent>
-```
-
-```
-<UIFormComponent></UIFormComponent>
-```
-
-```
-<UISearchComponent></UISearchComponent>
-```
-
-```
-<DatetimePickerComponent></DatetimePickerComponent>
-```
-
-```
-<TabsComponent></TabsComponent>
-```
-
-```
-<UIMiniChartComponent></UIMiniChartComponent>
-```
-
-
-# Core Components (TO BE UPDATED)
-
-
+## Demo
+[Link](https://kobby-sun.github.io/ng2-bean)
